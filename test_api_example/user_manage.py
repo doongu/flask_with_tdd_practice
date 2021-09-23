@@ -4,6 +4,7 @@ def get_user(id):
     response = requests.get(f"https://jsonplaceholder.typicode.com/users/{id}")
     if response.status_code != 200:
         raise Exception("Failed to get a user.")
+    print(response.json())
     return response.json()
 
 
