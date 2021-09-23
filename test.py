@@ -1,6 +1,5 @@
 from unittest import TestCase, main
 
-
 class MyTests(TestCase):
     def test_one_plus_two(self):
         self.assertEqual(1 + 2, 3)
@@ -15,4 +14,4 @@ class MyTests(TestCase):
 
 
 if __name__ == '__main__':
-    main()
+    main() #  테스트 스크립트에 명령행 인터페이스를 제공합니다. -v 를 넘기면 unittest.main()은 상세히 보여준다.
