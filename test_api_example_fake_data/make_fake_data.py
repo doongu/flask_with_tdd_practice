@@ -1,6 +1,6 @@
 from faker import Faker
 from faker.providers import internet
-import re
+import string
 # api에 테스트 해보기 위한 데이터 생성 부분입니다.
 # 어떤 필요한 데이터들을 생성해서 test를 해볼 것인가?를 주된 관점으로 작성해보았습니다.
 # 서버에 대한 API 요청을 테스트 해볼 것이기에, 이에 필요한 요소들을 정리해보겠습니다.
@@ -17,12 +17,7 @@ ex) http://localhost:80/main 으로 POST요청이 200이면 이건 잘못됐습�
 
 클라이언트 -> 서버 form data 부분은 따로 빼서 문법체크만 할 것입니다.
 '''
-fake = Faker('ko_KR')
-fake.add_provider(internet)
-# re로 숫자 특수문자 문자 넣고 돌리기 .
-print("lexify",fake.lexify(text= "?" * fake.random_int(min=1, max=10), letters="abcd123123123123123123123efghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
-# print("numerify",fake.numerify(text="######"))
 def get_fake():
     fake = Faker('ko_KR')
     fake.add_provider(internet)
@@ -37,7 +32,7 @@ def fake_request_data(fake_cnt):
     true_path = "/main"
     true_method = "POST"
     true_status = "200"
-
+    special_chr = '[-=+,#/\?:^$.@*"※~&%ㆍ!‘|\(\)\[\]\<\>`\']'
 
     for i in range(len(temp_uri)-1, -1, -1):
         try:
@@ -53,20 +48,24 @@ def fake_request_data(fake_cnt):
     
     'form_data_result' :  {
                     "lms_id" : fake.numerify(text="#########"), # 9글자 숫자
-                    "lms_pw" : random.randrange() 
-        }, #id는 9글자, 비밀번호는 6자리 숫자(asd) 숫자 특수문자 포함 10자리 이상혹은 최대 16자리
+                    "lms_pw" : fake.numerify(text="#") + fake.lexify(text= "????" + "?" *
+                        ( fake.random_int(min=5, max=11) * fake.random_int(min=0, max=1) ), 
+                        letters= (string.ascii_letters + string.digits + special_chr)) + 
+                        fake.lexify(text="?", letters = special_chr)
+        }, #id는 9글자, 비밀번호는 6자리 숫자(asd) 숫자 특수문자 포함 10자리 이상혹은 최대 16자리 , 첫 데이터는 통과하는 데이터 넣을거라, 항상 숫자 1 특수문자 1 을 포함하도록 하였음.
+    'status_code' : "200"
     }
     ]
 
 
     request_data_result += (
         {
-                'uri': "http://localhost:" + str(random.randrange(0,65536)) + "/" + path,
+                'uri': "http://localhost:" + str(fake.random_int(min=0, max=65535)) + "/" + path,
                 'method': fake.random_element(elements=('GET', 'POST', 'PUT')),
                 
                 'form_data_result' :  {
-                    "lms_id" : "",
-                    "lms_pw" : random.randrange()
+                    "lms_id" : fake.lexify(text= "?"* fake.random_int(min=0, max=18), letters = string.digits + string.ascii_letters ), 
+                    "lms_pw" : fake.lexify(text= "?" * fake.random_int(min=0, max=16), letters= (string.ascii_letters + string.digits + special_chr))
         }, #id는 9글자, 비밀번호는 6자리 숫자(asd) 숫자 특수문자 포함 10자리 이상혹은 최대 16자리
         'status_code' : fake.random_element(elements = (200, 400, 404))
         
@@ -77,5 +76,9 @@ def fake_request_data(fake_cnt):
 
 #form_data_result는 서버 -> lms에도 이용하니까 따로 빼둬야하지 않을까 ? 아니면 요청 하나하나에 힘을 실어야하기에 ㅇㅇ
 
-# a = fake_request_data(5)
-# print(a)
+a = fake_request_data(5)
+
+for i in range(len(a)):
+    print(len(a[i]['form_data_result']['lms_pw']))
+    print(a[i]['form_data_result'])
+    print(a[i]['form_data_result']['lms_pw'])
